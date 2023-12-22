@@ -1,6 +1,5 @@
-from layer import Layer
 class Input():
 
-    def __init__(self):
+    def __init__(self, size):
         self.output = []
-        #implement it as a layer
+        self.size = size
