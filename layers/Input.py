@@ -2,5 +2,5 @@ from layer import Layer
 class Input():
 
     def __init__(self):
-        self.values = []
+        self.output = []
         #implement it as a layer

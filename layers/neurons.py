@@ -14,9 +14,8 @@ class Neurons():
     def calc(self, weights, bias, activation_fn, values):
 
         activation = [a*b for a,b in zip(weights, values)] + bias
-        activation = sigmoid(activation)
-
         return activation
     
     def update (self, activations):
         self.value = self.calc(self.weights, self.bias, self.activation_fn, activations)
+        return self.value

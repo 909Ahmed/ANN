@@ -1,5 +1,5 @@
-# from Input import Input
-# from layer import Layer
+import numpy as np
+from sigmoid import der_sigmoid
 
 class Model():
 
@@ -13,12 +13,40 @@ class Model():
     def forward_pass (self, sample):
 
         pre_layer = self.input_layer
-        pre_layer.values = sample
+        pre_layer.output = sample
 
         for layer in self.layers:
-            layer.update(pre_layer.values)
+            layer.update(pre_layer.output)
             pre_layer = layer
+
+    def backward_pass(self, logits):
         
+        curr_layer = self.output_layer
+
+        grad_mat = [x - y for x, y in zip(self.output_layer.output, logits)]
+        der_Z = [der_sigmoid(x) for x in self.output_layer.values]
+
+        delta_list = []
+        del_curr = [x * y for x, y in zip(grad_mat, der_Z)]
+        delta_list.append(del_curr)
+        
+        while curr_layer != self.input_layer:
+            
+            delta_post = delta_list[-1]
+            
+            mat = [neuron.weights for neuron in curr_layer.layer]
+            mat = np.array(mat)
+            mat = mat.transpose()
+            
+            der_Z = [der_sigmoid(x) for x in self.curr_layer.values]
+            
+            dot = np.dot(mat, delta_post)
+            del_curr = [x * y for x, y in zip(dot, der_Z)]
+            delta_list.append(del_curr)
+
+            curr_layer = curr_layer.pre_layer
+
+
 
     def get_layers (self):
         
