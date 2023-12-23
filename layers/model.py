@@ -64,21 +64,17 @@ class Model():
         for _ in range(epochs):
             
             count = 0
+            check = []
             for i in range(len(X)):
 
                 predicted = self.forward_pass(X[i])
                 backprop = self.backward_pass(Y[i])
-            
-                count += self.calc_acc (predicted, Y)
-
+                count += self.calc_acc (predicted, Y[i])
+                check = predicted
             print (count / len(X))
 
-
-
-
-
     def calc_acc (self, predicted, Y):
-        return int(max(enumerate(predicted), key=lambda x: x[1])[0] == Y)
+        return int(predicted.index(max(predicted)) == Y)
 
 
     def softmax(self):

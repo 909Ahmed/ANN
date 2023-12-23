@@ -1,4 +1,3 @@
-def count ():
-    return int(True)
+import math
 
-print(count())
+print (math.exp(27526))
