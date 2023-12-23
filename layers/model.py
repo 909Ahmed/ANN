@@ -21,31 +21,13 @@ class Model():
             layer.update(pre_layer.output)
             pre_layer = layer
 
-    def get_embed (self, logits):
-        temp = [0] * 10
-        temp[logits] = 1
-        return temp
-
-    def softmax(self, ):
-        
-        sum = 0
-        res = []
-        
-        for i in range(len(self.output_layer.output)):
-            out = self.output_layer.output[i]
-            exp_out = math.exp(out)
-            sum += exp_out
-
-        for i in range(len(self.output_layer.output)):
-            out = self.output_layer.output[i]
-            res.append(math.exp(out) / sum)
-        
-        return res
+        self.output_layer.output = self.softmax()
+        return self.output_layer.output
 
     def backward_pass(self, logits):
         
         logits = self.get_embed (logits)
-        self.softmax()
+        
         grad_mat = [x - y for x, y in zip(self.output_layer.output, logits)]
         der_Z = [der_sigmoid(x) for x in self.output_layer.values]
 
@@ -73,16 +55,53 @@ class Model():
             del_curr = self.calc_delta(curr_layer, del_curr)
             curr_layer = curr_layer.pre_layer
 
+        return True
+
+
 
 
     def fit (self, X, Y, epochs):
         for _ in range(epochs):
+            
+            count = 0
             for i in range(len(X)):
 
-                self.forward_pass(X)
-                self.backward_pass(Y)
+                predicted = self.forward_pass(X[i])
+                backprop = self.backward_pass(Y[i])
+            
+                count += self.calc_acc (predicted, Y)
+
+            print (count / len(X))
 
 
+
+
+
+    def calc_acc (self, predicted, Y):
+        return int(max(enumerate(predicted), key=lambda x: x[1])[0] == Y)
+
+
+    def softmax(self):
+        
+        sum = 0
+        res = []
+        
+        for i in range(len(self.output_layer.output)):
+            out = self.output_layer.output[i]
+            exp_out = math.exp(out)
+            sum += exp_out
+
+        for i in range(len(self.output_layer.output)):
+            out = self.output_layer.output[i]
+            res.append(math.exp(out) / sum)
+        
+        return res
+
+
+    def get_embed (self, logits):
+        temp = [0] * 10
+        temp[logits] = 1
+        return temp
 
     def get_layers (self):
         
