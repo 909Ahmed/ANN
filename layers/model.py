@@ -10,7 +10,6 @@ class Model():
         self.output_layer = output_layer
         self.layers = self.get_layers()
 
-
     def forward_pass (self, sample):
 
         pre_layer = self.input_layer
@@ -21,33 +20,33 @@ class Model():
             layer.update(pre_layer.output)
             pre_layer = layer
 
+
         self.output_layer.output = self.softmax()
         return self.output_layer.output
 
+
     def backward_pass(self, logits):
-        
-        logits = self.get_embed (logits)
-        
+                
         grad_mat = [x - y for x, y in zip(self.output_layer.output, logits)]
         der_Z = [der_sigmoid(x) for x in self.output_layer.values]
 
         del_curr = [x * y for x, y in zip(grad_mat, der_Z)]
-
         curr_layer = self.output_layer
 
         while curr_layer != self.input_layer:
             
-            lr = 0.001
+            lr = 1
             for i in range(len(curr_layer.layer)):
                 
                 neuron = curr_layer.layer[i]
                 
-                for j in range(len(neuron.weights)):
+                for j in range(curr_layer.pre_layer.size):
+                    
+                    delt = curr_layer.pre_layer.output[j] * del_curr[i]
+                    neuron.weights[j] = neuron.weights[j] - lr * delt 
 
-                    delta = curr_layer.pre_layer.output[j] * del_curr[i]
-                    neuron.weights[j] = neuron.weights[j] - lr * delta
 
-            for j in range(len(del_curr)):
+            for i in range(len(del_curr)):
                 
                 neuron = curr_layer.layer[i]
                 neuron.bias = neuron.bias - lr * del_curr[i]
@@ -56,7 +55,7 @@ class Model():
             curr_layer = curr_layer.pre_layer
 
         return True
-
+    
 
 
 
@@ -64,13 +63,12 @@ class Model():
         for _ in range(epochs):
             
             count = 0
-            check = []
             for i in range(len(X)):
 
                 predicted = self.forward_pass(X[i])
-                backprop = self.backward_pass(Y[i])
+                backprop = self.backward_pass(self.get_embed(Y[i]))
                 count += self.calc_acc (predicted, Y[i])
-                check = predicted
+                # print (i)
             print (count / len(X))
 
     def calc_acc (self, predicted, Y):
@@ -114,12 +112,15 @@ class Model():
 
     def calc_delta(self, curr_layer, delta_post):
         
+        if curr_layer.pre_layer == self.input_layer:
+            return []
+        
         mat = [neuron.weights for neuron in curr_layer.layer]
         mat = np.array(mat)
         mat = mat.transpose()
         
         der_Z = [der_sigmoid(x) for x in curr_layer.pre_layer.values]
-        
+
         dot = np.dot(mat, delta_post)
         del_curr = [x * y for x, y in zip(dot, der_Z)]
 

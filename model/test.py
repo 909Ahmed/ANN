@@ -1,3 +1,3 @@
-import math
+import numpy as np
 
-print (math.exp(27526))
+print (np.random.rand(5))

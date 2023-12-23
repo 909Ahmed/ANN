@@ -1,14 +1,14 @@
 from sigmoid import sigmoid
+import numpy as np
 
 class Neurons(): 
 
     def __init__(self, weights, bias, activation_fn, values):
 
-        self.weights = [1] * weights
-        self.bias = bias
+        self.weights = np.random.rand(weights)
+        self.bias = np.random.random()
         self.activation_fn = activation_fn
         self.value = 0
-        # self.value = self.calc(weights, bias, activation_fn, values)
 
 
     

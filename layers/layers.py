@@ -7,6 +7,7 @@ class Layer ():
         
         self.size = size
         self.pre_layer = pre_layer
+        
         self.layer = [Neurons(self.pre_layer.size, 1, activation_fn, self.pre_layer.output) for _ in range(size)]
         self.values = [neuron.value for neuron in self.layer]
         self.output = [sigmoid(x) for x in self.values]
