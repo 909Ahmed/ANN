@@ -15,6 +15,7 @@ class Model():
 
         pre_layer = self.input_layer
         pre_layer.output = sample
+        pre_layer.values = sample
 
         for layer in self.layers:
             layer.update(pre_layer.output)
@@ -54,8 +55,6 @@ class Model():
 
         while curr_layer != self.input_layer:
             
-            del_curr = self.calc_delta(curr_layer, del_curr)
-
             lr = 0.001
             for i in range(len(curr_layer.layer)):
                 
@@ -71,6 +70,7 @@ class Model():
                 neuron = curr_layer.layer[i]
                 neuron.bias = neuron.bias - lr * del_curr[i]
 
+            del_curr = self.calc_delta(curr_layer, del_curr)
             curr_layer = curr_layer.pre_layer
 
 
@@ -98,12 +98,12 @@ class Model():
     
 
     def calc_delta(self, curr_layer, delta_post):
-
+        
         mat = [neuron.weights for neuron in curr_layer.layer]
         mat = np.array(mat)
         mat = mat.transpose()
         
-        der_Z = [der_sigmoid(x) for x in curr_layer.values]
+        der_Z = [der_sigmoid(x) for x in curr_layer.pre_layer.values]
         
         dot = np.dot(mat, delta_post)
         del_curr = [x * y for x, y in zip(dot, der_Z)]
