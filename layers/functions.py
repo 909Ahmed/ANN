@@ -8,7 +8,7 @@ def der_sigmoid (x):
 
     return sigmoid(x) * (1 - sigmoid(x))
 
-def softmax(x):
+def softmax(x): #update it 
     
     sum = 0
     res = []
@@ -27,3 +27,4 @@ def relu (x):
 
 def LeakyReLU (x, alpha):
     return max (alpha * x, x)
+

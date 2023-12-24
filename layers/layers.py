@@ -7,7 +7,7 @@ class Layer ():
         
         self.size = size
         self.pre_layer = pre_layer
-        self.layer = [Neurons(self.pre_layer.size, 1, activation_fn, self.pre_layer.output) for _ in range(size)]
+        self.layer = [Neurons(self.pre_layer.size, 1, activation_fn) for _ in range(size)]
 
     def update (self, activations):
 
