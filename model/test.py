@@ -1,2 +1,2 @@
-import numpy as np
-print (np.random.random())
+li = [123.0, 443.4 ,3.0 ,43.4]
+print (li / 4)

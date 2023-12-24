@@ -12,7 +12,7 @@ class Model():
 
     def forward_pass (self, sample):
 
-        activations = [np.array(sample)]
+        activations = [sample]
         zlist = []
 
         for layer in self.layers:
@@ -20,8 +20,8 @@ class Model():
             weights = [neuron.weights for neuron in layer.layer]
             bias = [neuron.bias for neuron in layer.layer]
 
-            zlist.append(np.add (np.dot(weights, activations[-1].transpose()), bias))
-            activations.append(np.array([sigmoid(z) for z in zlist[-1]]))            
+            zlist.append(np.add (np.dot(weights, activations[-1]), bias))
+            activations.append([sigmoid(z) for z in zlist[-1]])  
 
         return activations, zlist
 
@@ -43,7 +43,7 @@ class Model():
             
             del_weights = np.outer(del_curr, prev_act)
             del_bias = del_curr
-
+            
             del_w_list.append(del_weights)
             del_b_list.append(del_bias)
 
@@ -56,12 +56,10 @@ class Model():
         return del_w_list, del_b_list
     
 
-    def fit (self, X, Y, epochs, batch_size):
+    def fit (self, X, Y, X_test, Y_test, epochs, batch_size):
         
         for _ in range(epochs):
-            
-            count = 0
-            
+                        
             for i in range(len(X) // batch_size - 1):
                 
                 del_w = []
@@ -70,23 +68,34 @@ class Model():
                 for x, y in zip(X[batch_size * i: batch_size * (i+1)], Y[batch_size * i: batch_size * (i+1)]):
 
                     activations, zlist = self.forward_pass(x)
-                    count += self.calc_acc (activations[-1], y)
                     del_wb, del_bb = self.backward_pass(activations, zlist, self.get_embed(y))           
+                    
+                    if del_w == []:
+                        del_w = del_wb
+                    if del_b == []:
+                        del_b = del_bb
+                    
+                    del_w = [[[x + y for x, y in zip(listA, listB)] for listA, listB in zip(matA, matB)] for matA, matB in zip(del_w, del_wb)]
+                    del_b = [[x + y for x, y in zip(listA, listB)] for listA, listB in zip(del_b, del_bb)]
 
-                    del_w += del_wb
-                    del_b += del_bb
+                del_w = [[[x / batch_size for x in listA] for listA in matA] for matA in del_w]
+                del_b = [[x / batch_size for x in listA] for listA in del_b]
                 
-
-                del_w = [[row / batch_size for row in matrix_2d] for matrix_2d in del_w]
-                del_b = [[row / batch_size for row in matrix_2d] for matrix_2d in del_b]
-
-
                 self.update_weights(del_w)
                 self.update_bias(del_b)
 
-            print (count / len(X))
+            self.evaluate (X_test, Y_test)
 
 
+
+    def evaluate (self, X_test, Y_test):
+        count = 0
+
+        for x, y in zip(X_test, Y_test):
+            pred, temp = self.forward_pass(x)
+            count += self.calc_acc(pred[-1], y)
+        
+        print ((count / len(X_test)))
 
     def update_weights(self, del_w):
         

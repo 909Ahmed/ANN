@@ -9,8 +9,6 @@ class Neurons():
         self.bias = np.random.rand()
         self.activation_fn = activation_fn
         self.value = 0
-
-
     
     def calc(self, weights, bias, activation_fn, values):
 

@@ -21,3 +21,9 @@ def softmax(x):
         res.append(math.exp(out) / sum)
     
     return np.array(res)
+
+def relu (x):
+    return max (0, x)
+
+def LeakyReLU (x, alpha):
+    return max (alpha * x, x)
