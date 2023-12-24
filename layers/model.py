@@ -28,18 +28,18 @@ class Model():
 
     def backward_pass(self, activations, zlist, logits):
                 
-        grad_mat = [x - y for x, y in zip(activations[-1], logits)]
+        grad_mat = cost_der(activations[-1], logits)
         der_Z = [der_sigmoid(x) for x in zlist[-1]]
         activations.pop()
         zlist.pop()
 
-        del_curr = [x * y for x, y in zip(grad_mat, der_Z)]        
+        del_curr = np.multiply(grad_mat, der_Z)
         del_w_list = []
         del_b_list = []
 
         for layer in self.layers[::-1]:
             
-            prev_act = np.array(activations[-1])
+            prev_act = activations[-1]
             
             del_weights = np.outer(del_curr, prev_act)
             del_bias = del_curr
@@ -67,7 +67,7 @@ class Model():
                 for x, y in zip(X[batch_size * i: batch_size * (i+1)], Y[batch_size * i: batch_size * (i+1)]):
 
                     activations, zlist = self.forward_pass(x)
-                    del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y))           
+                    del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y, self.output_layer.size))           
                     
                     if del_w == []:
                         del_w = del_wb
@@ -97,22 +97,28 @@ class Model():
         
         print ((count / len(X_test)) * 100)
 
+
+
     def update_weights(self, del_w):
         
         for layer, d_we in zip(self.layers[::-1], del_w):
             
-            d_we = self.lr * d_we
+            d_we = [d_each * self.lr for d_each in d_we] #update
             for i, neuron in enumerate(layer.layer):
                 neuron.weights = np.subtract(neuron.weights, d_we[i])
             
+
+
 
     def update_bias(self, del_b):
             
         for layer, d_b in zip(self.layers[::-1], del_b):
             
-            d_b = self.lr * d_b
+            d_b = [d_each * self.lr for d_each in d_b]  #update
             for i, neuron in enumerate(layer.layer):
                 neuron.bias = neuron.bias - d_b[i]
+
+
 
     def get_layers (self):
         

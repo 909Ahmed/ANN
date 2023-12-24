@@ -8,17 +8,10 @@ def der_sigmoid (x):
 
     return sigmoid(x) * (1 - sigmoid(x))
 
-def softmax(x): #update it 
+def softmax(x):
     
-    sum = 0
-    res = []
-    
-    for out in x:
-        exp_out = math.exp(out)
-        sum += exp_out
-
-    for out in x:
-        res.append(math.exp(out) / sum)
+    sigma = sum([math.exp(out) for out in x])
+    res = [(math.exp(out) / sigma) for out in x]
     
     return np.array(res)
 
@@ -28,12 +21,17 @@ def relu (x):
 def LeakyReLU (x, alpha):
     return max (alpha * x, x)
 
+def cost_der (activations, logits):
+
+    return np.subtract(activations, logits)
+
 def calc_acc (predicted, Y):
+
     predicted = list(predicted)
     return int(predicted.index(max(predicted)) == Y)
 
-def get_embed (logits):
-    temp = [0] * 10     #change
+def get_embed (logits, size):
+    temp = [0] * size
     temp[logits] = 1
     return temp
 
@@ -46,6 +44,6 @@ def calc_delta(curr_layer, delta_post, zs):
     der_Z = [der_sigmoid(x) for x in zs]
 
     dot = np.dot(mat, delta_post)
-    del_curr = [x * y for x, y in zip(dot, der_Z)]
+    del_curr = np.multiply(dot, der_Z)
 
     return del_curr
