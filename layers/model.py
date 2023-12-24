@@ -35,7 +35,7 @@ class Model():
         del_w_list = []
         del_b_list = []
 
-        for index, layer in self.layers[::-1]:
+        for index, layer in enumerate(self.layers[::-1]):
             
             prev_act = activations[-index - 2]
             
