@@ -5,8 +5,8 @@ class Neurons():
 
     def __init__(self, weights, bias, activation_fn, values):
 
-        self.weights = np.random.rand(weights)
-        self.bias = np.random.random()
+        self.weights = np.random.randn(weights)
+        self.bias = np.random.rand()
         self.activation_fn = activation_fn
         self.value = 0
 

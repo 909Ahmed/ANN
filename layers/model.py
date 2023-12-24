@@ -23,8 +23,6 @@ class Model():
             zlist.append(np.add (np.dot(weights, activations[-1].transpose()), bias))
             activations.append(np.array([sigmoid(z) for z in zlist[-1]]))            
 
-        activations[-1] = softmax(activations[-1])
-
         return activations, zlist
 
 
@@ -36,7 +34,6 @@ class Model():
         zlist.pop()
 
         del_curr = [x * y for x, y in zip(grad_mat, der_Z)]        
-
         del_w_list = []
         del_b_list = []
 
