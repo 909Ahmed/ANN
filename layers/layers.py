@@ -1,5 +1,5 @@
 from neurons import Neurons
-from sigmoid import sigmoid
+from functions import sigmoid
 
 class Layer ():
 

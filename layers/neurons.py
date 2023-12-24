@@ -1,4 +1,4 @@
-from sigmoid import sigmoid
+from functions import sigmoid
 import numpy as np
 
 class Neurons(): 
