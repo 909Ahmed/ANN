@@ -17,4 +17,4 @@ X_train = np.array(X_train)
 X_train = X_train.reshape (-1, 784)
 
 X_train = X_train / 255
-model.fit(X_train[:10000], Y_train[:10000], 32)
+model.fit(X_train[:10000], Y_train[:10000], 10, 32)

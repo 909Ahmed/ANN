@@ -8,12 +8,11 @@ class Model():
         self.input_layer = input_layer
         self.output_layer = output_layer
         self.layers = self.get_layers()
-
-
+        self.lr = 10
 
     def forward_pass (self, sample):
 
-        activations = [sample]
+        activations = [np.array(sample)]
         zlist = []
 
         for layer in self.layers:
@@ -33,6 +32,8 @@ class Model():
                 
         grad_mat = [x - y for x, y in zip(activations[-1], logits)]
         der_Z = [der_sigmoid(x) for x in zlist[-1]]
+        activations.pop()
+        zlist.pop()
 
         del_curr = [x * y for x, y in zip(grad_mat, der_Z)]        
 
@@ -42,9 +43,7 @@ class Model():
         for layer in self.layers[::-1]:
             
             prev_act = np.array(activations[-1])
-            activations.pop()
-            zlist.pop()
-
+            
             del_weights = np.outer(del_curr, prev_act)
             del_bias = del_curr
 
@@ -52,7 +51,11 @@ class Model():
             del_b_list.append(del_bias)
 
             del_curr = self.calc_delta(layer, del_curr, zlist)
-        
+
+            activations.pop()
+            if (len(zlist) > 0):
+                zlist.pop()
+
         return del_w_list, del_b_list
     
 
@@ -64,24 +67,50 @@ class Model():
             
             for i in range(len(X) // batch_size - 1):
                 
-                del_w, del_b = []
+                del_w = []
+                del_b = []
                 
                 for x, y in zip(X[batch_size * i: batch_size * (i+1)], Y[batch_size * i: batch_size * (i+1)]):
 
-                    activations, zlist = self.forward_pass(x[i])
-                    del_wb, del_bb = self.backward_pass(activations, zlist, self.get_embed(x[i]))           
-                    count += self.calc_acc (activations[-1], Y[i])
+                    activations, zlist = self.forward_pass(x)
+                    count += self.calc_acc (activations[-1], y)
+                    del_wb, del_bb = self.backward_pass(activations, zlist, self.get_embed(y))           
 
                     del_w += del_wb
                     del_b += del_bb
                 
-                self.update_weigths(del_w)
+
+                del_w = [[row / batch_size for row in matrix_2d] for matrix_2d in del_w]
+                del_b = [[row / batch_size for row in matrix_2d] for matrix_2d in del_b]
+
+
+                self.update_weights(del_w)
                 self.update_bias(del_b)
 
             print (count / len(X))
 
 
+
+    def update_weights(self, del_w):
+        
+        for layer, d_we in zip(self.layers[::-1], del_w):
+            
+            d_we = self.lr * d_we
+            for i, neuron in enumerate(layer.layer):
+                neuron.weights = np.subtract(neuron.weights, d_we[i])
+            
+
+    def update_bias(self, del_b):
+            
+        for layer, d_b in zip(self.layers[::-1], del_b):
+            
+            d_b = self.lr * d_b
+            for i, neuron in enumerate(layer.layer):
+                neuron.bias = neuron.bias - d_b[i]
+
+
     def calc_acc (self, predicted, Y):
+        predicted = list(predicted)
         return int(predicted.index(max(predicted)) == Y)
 
 

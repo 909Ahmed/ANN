@@ -1,5 +1,5 @@
 import math
-
+import numpy as np
 def sigmoid (x):
 
     return math.exp(x) / (1 + math.exp(x))
@@ -20,4 +20,4 @@ def softmax(x):
     for out in x:
         res.append(math.exp(out) / sum)
     
-    return res
+    return np.array(res)

@@ -1,8 +1,6 @@
-import numpy as np
+ab = []
 
-array1 = [1, 2, 3, 4, 5, 6, 7]
-array2 = [2, 3, 4, 5, 6]
+ba = [[[34]], [[33]]]
 
-matrix = np.outer(array1, array2)
-
-print(matrix)
+ab += ba
+print (ab)
