@@ -67,7 +67,7 @@ class Model():
                 for x, y in zip(X[batch_size * i: batch_size * (i+1)], Y[batch_size * i: batch_size * (i+1)]):
 
                     activations, zlist = self.forward_pass(x)
-                    del_wb, del_bb = self.backward_pass(activations, zlist, self.get_embed(y))           
+                    del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y))           
                     
                     if del_w == []:
                         del_w = del_wb
