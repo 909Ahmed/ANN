@@ -30,27 +30,23 @@ class Model():
                 
         grad_mat = cost_der(activations[-1], logits)
         der_Z = [der_sigmoid(x) for x in zlist[-1]]
-        activations.pop()
-        zlist.pop()
 
         del_curr = np.multiply(grad_mat, der_Z)
         del_w_list = []
         del_b_list = []
 
-        for layer in self.layers[::-1]:
+        for index, layer in self.layers[::-1]:
             
-            prev_act = activations[-1]
+            prev_act = activations[-index - 2]
             
             del_weights = np.outer(del_curr, prev_act)
-            del_bias = del_curr
+            del_bias = np.array(del_curr)
             
             del_w_list.append(del_weights)
             del_b_list.append(del_bias)
 
-            if (len(zlist) > 0):
-                del_curr = calc_delta(layer.layer, del_curr, zlist[-1])
-                zlist.pop()
-            activations.pop()
+            if (index < len(self.layers) - 1):
+                del_curr = calc_delta(layer.layer, del_curr, zlist[-index - 2])
 
         return del_w_list, del_b_list
     
@@ -71,14 +67,14 @@ class Model():
                     
                     if del_w == []:
                         del_w = del_wb
-                    if del_b == []:
                         del_b = del_bb
+                        continue
                     
-                    del_w = [[[x + y for x, y in zip(listA, listB)] for listA, listB in zip(matA, matB)] for matA, matB in zip(del_w, del_wb)]
-                    del_b = [[x + y for x, y in zip(listA, listB)] for listA, listB in zip(del_b, del_bb)]
+                    del_w = [np.add(matA, matB) for matA, matB in zip(del_w, del_wb)]
+                    del_b = [np.add(listA, listB) for listA, listB in zip(del_b, del_bb)]
 
-                del_w = [[[x / batch_size for x in listA] for listA in matA] for matA in del_w]
-                del_b = [[x / batch_size for x in listA] for listA in del_b]
+                del_w = [matA / batch_size for matA in del_w]
+                del_b = [listA / batch_size for listA in del_b]
                 
                 self.update_weights(del_w)
                 self.update_bias(del_b)
@@ -98,26 +94,24 @@ class Model():
         print ((count / len(X_test)) * 100)
 
 
-
     def update_weights(self, del_w):
         
         for layer, d_we in zip(self.layers[::-1], del_w):
             
-            d_we = [d_each * self.lr for d_each in d_we] #update
+            d_we = np.array(d_we)
+            d_we = self.lr * d_we
             for i, neuron in enumerate(layer.layer):
                 neuron.weights = np.subtract(neuron.weights, d_we[i])
             
-
-
 
     def update_bias(self, del_b):
             
         for layer, d_b in zip(self.layers[::-1], del_b):
             
-            d_b = [d_each * self.lr for d_each in d_b]  #update
+            d_b = np.array(d_b)
+            d_b = d_b * self.lr
             for i, neuron in enumerate(layer.layer):
                 neuron.bias = neuron.bias - d_b[i]
-
 
 
     def get_layers (self):
