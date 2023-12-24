@@ -8,7 +8,7 @@ class Model():
         self.input_layer = input_layer
         self.output_layer = output_layer
         self.layers = self.get_layers()
-        self.lr = 10
+        self.lr = 1
 
     def forward_pass (self, sample):
 
@@ -47,11 +47,10 @@ class Model():
             del_w_list.append(del_weights)
             del_b_list.append(del_bias)
 
-            del_curr = self.calc_delta(layer, del_curr, zlist)
-
-            activations.pop()
             if (len(zlist) > 0):
+                del_curr = calc_delta(layer.layer, del_curr, zlist[-1])
                 zlist.pop()
+            activations.pop()
 
         return del_w_list, del_b_list
     
@@ -89,13 +88,14 @@ class Model():
 
 
     def evaluate (self, X_test, Y_test):
+        
         count = 0
 
         for x, y in zip(X_test, Y_test):
             pred, temp = self.forward_pass(x)
-            count += self.calc_acc(pred[-1], y)
+            count += calc_acc(pred[-1], y)
         
-        print ((count / len(X_test)))
+        print ((count / len(X_test)) * 100)
 
     def update_weights(self, del_w):
         
@@ -114,17 +114,6 @@ class Model():
             for i, neuron in enumerate(layer.layer):
                 neuron.bias = neuron.bias - d_b[i]
 
-
-    def calc_acc (self, predicted, Y):
-        predicted = list(predicted)
-        return int(predicted.index(max(predicted)) == Y)
-
-
-    def get_embed (self, logits):
-        temp = [0] * 10
-        temp[logits] = 1
-        return temp
-
     def get_layers (self):
         
         layers = []
@@ -136,20 +125,3 @@ class Model():
             curr_layer = curr_layer.pre_layer
         
         return layers[::-1]
-    
-
-    def calc_delta(self, curr_layer, delta_post, zlist):
-        
-        if curr_layer.pre_layer == self.input_layer:
-            return []
-        
-        mat = [neuron.weights for neuron in curr_layer.layer]
-        mat = np.array(mat)
-        mat = mat.transpose()
-        
-        der_Z = [der_sigmoid(x) for x in zlist[-1]]
-
-        dot = np.dot(mat, delta_post)
-        del_curr = [x * y for x, y in zip(dot, der_Z)]
-
-        return del_curr

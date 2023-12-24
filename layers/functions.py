@@ -28,3 +28,24 @@ def relu (x):
 def LeakyReLU (x, alpha):
     return max (alpha * x, x)
 
+def calc_acc (predicted, Y):
+    predicted = list(predicted)
+    return int(predicted.index(max(predicted)) == Y)
+
+def get_embed (logits):
+    temp = [0] * 10     #change
+    temp[logits] = 1
+    return temp
+
+def calc_delta(curr_layer, delta_post, zs):
+        
+    mat = [neuron.weights for neuron in curr_layer]
+    mat = np.array(mat)
+    mat = mat.transpose()
+    
+    der_Z = [der_sigmoid(x) for x in zs]
+
+    dot = np.dot(mat, delta_post)
+    del_curr = [x * y for x, y in zip(dot, der_Z)]
+
+    return del_curr
