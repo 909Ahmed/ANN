@@ -21,4 +21,4 @@ X_test = np.array(X_test)
 X_test = X_test.reshape (-1, 784)
 X_test = X_test / 255
 
-model.fit(X_train, Y_train, X_test, Y_test, 5, 512)
+model.fit(X_train, Y_train, X_test, Y_test, 20, 32)
