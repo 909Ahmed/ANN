@@ -1,7 +1,5 @@
-from neurons import Neurons
-from functions import sigmoid
-
-class Layer ():
+from .neurons import Neurons
+class Dense ():
 
     def __init__(self, size, activation_fn, pre_layer):
         
@@ -9,3 +7,4 @@ class Layer ():
         self.pre_layer = pre_layer
         self.layer = [Neurons(self.pre_layer.size) for _ in range(size)]
         self.activation_fn = activation_fn
+        self.type = 'dense'

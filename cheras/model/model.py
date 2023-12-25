@@ -1,6 +1,6 @@
 import numpy as np
-import math
-from functions import *
+from ..Func.functions import *
+
 class Model():
 
     def __init__(self, input_layer, output_layer):

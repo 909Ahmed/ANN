@@ -1,15 +1,15 @@
-from model import Model
-from layers import Layer
-from Input import Input
+from cheras.Model.model import Model
+from cheras.Layers.Dense import Dense
+from cheras.Layers.Input import Input
 from tensorflow.keras.datasets import mnist
 import numpy as np
 
 (X_train, Y_train), (X_test, Y_test) = mnist.load_data()
 
 a = Input(784)
-b = Layer(64, 'sigmoid', a)
-c = Layer(64, 'sigmoid', b)
-y = Layer(10, 'sigmoid', c)
+b = Dense(64, 'sigmoid', a)
+c = Dense(64, 'sigmoid', b)
+y = Dense(10, 'sigmoid', c)
 
 model = Model (a, y)
 
