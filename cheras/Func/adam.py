@@ -1,43 +1,40 @@
 import numpy as np
-import math
 class Adam ():
 
-
-    def __init__(self, layers, lr=0.001, beta1=0.9, beta2=0.99):
+    def __init__(self, layers, lr=0.001, beta1=0.9, beta2=0.999):
         
         self.beta1 = beta1
         self.beta2 = beta2
         self.lr = lr
-        self.eps = 0.00000001
+        self.eps = 1e-8
         
-        self.weight_vel = [np.zeros(layer.size, layer.pre_layer.size) for layer in layers[::-1]]
+        self.weight_vel = [np.zeros((layer.size, layer.pre_layer.size)) for layer in layers[::-1]]
         self.bias_vel = [np.zeros(layer.size) for layer in layers[::-1]]
 
-        self.weight_rms = [np.zeros(layer.size, layer.pre_layer.size) for layer in layers[::-1]]
+        self.weight_rms = [np.zeros((layer.size, layer.pre_layer.size)) for layer in layers[::-1]]
         self.bias_rms = [np.zeros(layer.size) for layer in layers[::-1]]
 
-    
-    def adam_weights (self, del_w):
+
+    def adam_weights (self, del_w, batch):
         
-        temp1 = [self.calc_vel_weights(mat, index) for index, mat in enumerate(del_w)]
-        temp2 = [self.calc_rms_weights(mat, index) for index, mat in enumerate(del_w)]
+        self.weight_vel = [self.calc_vel_weights(mat, index) for index, mat in enumerate(del_w)]
+        self.weight_rms = [self.calc_rms_weights(mat, index) for index, mat in enumerate(del_w)]
 
-        self.weight_vel = temp1
-        self.weight_rms = temp2
+        vhat = [ele / (1 - (self.beta1 ** (batch + 1))) for ele in self.weight_vel]
+        mhat = [ele / (1 - (self.beta2 ** (batch + 1))) for ele in self.weight_rms]
 
-        return [vel / math.sqrt (rms + self.eps) for vel, rms in zip(temp1, temp2)]
-        
+        return [self.lr * np.divide(vel, (np.sqrt(rms) + self.eps)) for vel, rms in zip(vhat, mhat)]
 
-    def adam_bias (self, del_b):
-        
-        temp1 = [self.calc_vel_bias(mat, index) for index, mat in enumerate(del_b)]
-        temp2 = [self.calc_rms_bias(mat, index) for index, mat in enumerate(del_b)]
 
-        self.bias_vel = temp1
-        self.bias_rms = temp2
+    def adam_bias (self, del_b, batch):
 
-        return [vel / math.sqrt (rms + self.eps) for vel, rms in zip(temp1, temp2)]
-    
+        self.bias_vel = [self.calc_vel_bias(mat, index) for index, mat in enumerate(del_b)]
+        self.bias_rms = [np.add(self.bias_rms[index], self.calc_rms_bias(mat, index)) for index, mat in enumerate(del_b)]
+
+        vhat = [ele / (1 - (self.beta1 ** (batch + 1))) for ele in self.bias_vel]
+        mhat = [ele / (1 - (self.beta2 ** (batch + 1))) for ele in self.bias_rms]
+
+        return [self.lr * np.divide(vel, (np.sqrt(rms) + self.eps)) for vel, rms in zip(vhat, mhat)]
 
 
     def calc_vel_weights (self, mat, index):

@@ -1,5 +1,6 @@
 import math
 import numpy as np
+
 def sigmoid (x):
 
     return math.exp(x) / (1 + math.exp(x))

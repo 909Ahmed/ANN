@@ -1,10 +1,5 @@
 import numpy as np
 
-b = [2, 2, 2]
-c = [3, 3, 3, 3, 3]
-
-d = np.outer(b, c)
-
-print (d)
-a = np.zeros((3, 5))
-print (a)
+a = np.array([[1, 1, 4], [2, 2, 2]])
+b = [[1, 1, 1], [2, 4, 5]]
+print(a ** 2)
