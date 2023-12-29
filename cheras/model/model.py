@@ -1,7 +1,7 @@
 import numpy as np
 from ..Func.mathfunc import *
 from ..Func.misc import *
-from ..Func.adam import Adam
+from ..optimizers.adam import Adam
 
 class Model():
 
@@ -10,7 +10,8 @@ class Model():
         self.input_layer = input_layer
         self.output_layer = output_layer
         self.layers = self.get_layers()
-        adam = Adam(1, 0.9, 0.99, self.layers)
+        self.optimizer = None
+
 
     def forward_pass (self, sample):
 
@@ -57,12 +58,12 @@ class Model():
         
         for _ in range(epochs):
                         
-            for i in range(len(X) // batch_size - 1):
+            for batch in range(len(X) // batch_size - 1):
                 
                 del_w = [np.zeros((layer.size, layer.pre_layer.size)) for layer in self.layers[::-1]]
                 del_b = [np.zeros(layer.size) for layer in self.layers[::-1]]
                 
-                for x, y in zip(X[batch_size * i: batch_size * (i+1)], Y[batch_size * i: batch_size * (i+1)]):
+                for x, y in zip(X[batch_size * batch: batch_size * (batch+1)], Y[batch_size * batch: batch_size * (batch+1)]):
 
                     activations, zlist = self.forward_pass(x)
                     del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y, self.output_layer.size))
@@ -73,15 +74,34 @@ class Model():
                 del_w = [matA / batch_size for matA in del_w]
                 del_b = [listA / batch_size for listA in del_b]
                 
-                self.update_weights(del_w)
-                self.update_bias(del_b)
+                self.update_weights(del_w, batch)
+                self.update_bias(del_b, batch)
 
             self.evaluate (X_test, Y_test)
 
 
+    def update_weights(self, del_w, batch):
+
+        new_weights = self.optimizer.adam_weights (del_w, batch)
+        
+        for layer, d_we in zip(self.layers[::-1], new_weights):
+            
+            for i, neuron in enumerate(layer.layer):
+                neuron.weights = np.subtract(neuron.weights, d_we[i])
+            
+
+    def update_bias(self, del_b, batch):
+
+        new_bias = self.optimizer.adam_bias (del_b, batch)
+            
+        for layer, d_b in zip(self.layers[::-1], new_bias):
+            
+            for i, neuron in enumerate(layer.layer):
+                neuron.bias = neuron.bias - d_b[i]
+
 
     def evaluate (self, X_test, Y_test):
-        
+    
         count = 0
 
         for x, y in zip(X_test, Y_test):
@@ -91,29 +111,8 @@ class Model():
         print ((count / len(X_test)) * 100)
 
 
-    def update_weights(self, del_w):
-
-        new_weights = self.adam.adam_weights (del_w, self.beta1, self.beta2)
-        
-        for layer, d_we in zip(self.layers[::-1], del_w):
-            
-            d_we = np.array(d_we)
-            d_we = self.adam.lr * d_we
-            for i, neuron in enumerate(layer.layer):
-                neuron.weights = np.subtract(neuron.weights, d_we[i])
-            
-
-    def update_bias(self, del_b):
-
-        new_bias = self.adam.adam_bias (del_b, self.beta1, self.beta2)
-            
-        for layer, d_b in zip(self.layers[::-1], del_b):
-            
-            d_b = np.array(d_b)
-            d_b = d_b * self.adam.lr
-            for i, neuron in enumerate(layer.layer):
-                neuron.bias = neuron.bias - d_b[i]
-
+    def optimize (self, lr, beta1, beta2):
+        self.optimizer = Adam(self.layers, lr, beta1, beta2)
 
     def get_layers (self):
         
