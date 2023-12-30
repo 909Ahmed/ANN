@@ -54,9 +54,9 @@ class Model():
         return del_w_list, del_b_list
     
 
-    def fit (self, X, Y, X_test, Y_test, epochs, batch_size):
+    def fit (self, X, Y, X_valid, Y_valid, epochs, batch_size):
         
-        for _ in range(epochs):
+        for epoch in range(epochs):
                         
             for batch in range(len(X) // batch_size - 1):
                 
@@ -74,10 +74,10 @@ class Model():
                 del_w = [matA / batch_size for matA in del_w]
                 del_b = [listA / batch_size for listA in del_b]
                 
-                self.update_weights(del_w, batch)
-                self.update_bias(del_b, batch)
+                self.update_weights(del_w, batch_size * epoch + batch)
+                self.update_bias(del_b, batch_size * epoch + batch)
 
-            self.evaluate (X_test, Y_test)
+            self.evaluate (X_valid, Y_valid)
 
 
     def update_weights(self, del_w, batch):
@@ -100,15 +100,15 @@ class Model():
                 neuron.bias = neuron.bias - d_b[i]
 
 
-    def evaluate (self, X_test, Y_test):
+    def evaluate (self, X_valid, Y_valid):
     
         count = 0
 
-        for x, y in zip(X_test, Y_test):
+        for x, y in zip(X_valid, Y_valid):
             pred, temp = self.forward_pass(x)
             count += calc_acc(pred[-1], y)
         
-        print ((count / len(X_test)) * 100)
+        print ((count / len(X_valid)) * 100)
 
 
     def optimize (self, lr, beta1, beta2):
