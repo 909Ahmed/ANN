@@ -20,11 +20,20 @@ class Model():
 
         for layer in self.layers:
             
-            weights = [neuron.weights for neuron in layer.layer]
-            bias = [neuron.bias for neuron in layer.layer]
+            if layer.type == 'dense':
 
-            zlist.append(np.add (np.dot(weights, activations[-1]), bias))
-            activations.append([sigmoid(z) for z in zlist[-1]])  
+                weights = [neuron.weights for neuron in layer.layer]
+                bias = [neuron.bias for neuron in layer.layer]
+                
+                zlist.append(np.add (np.dot(weights, activations[-1]), bias))
+                activations.append([sigmoid(z) for z in zlist[-1]])  
+            
+            elif layer.type == 'conv':
+                
+                #aaaaargh 
+
+                zlist.append(np.add (np.dot(weights, activations[-1]), bias))
+                activations.append([sigmoid(z) for z in zlist[-1]])
 
         return activations, zlist
 
