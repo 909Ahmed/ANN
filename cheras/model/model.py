@@ -13,7 +13,7 @@ class Model():
         self.optimizer = None
 
 
-    def forward_pass (self, sample):
+    def forward_pass (self, sample, Training=False):
 
         activations = [sample]
         zlist = []
@@ -35,6 +35,13 @@ class Model():
                 zlist.append(np.add (np.dot(weights, activations[-1]), bias))
                 activations.append([sigmoid(z) for z in zlist[-1]])
 
+            elif layer.type == 'dropout' and Training:
+                
+                if zlist != []:
+
+                    zlist[-1] = drop_func(zlist[-1], layer.rate)
+                    activations[-1] = drop_func(activations[-1], layer.rate)
+
         return activations, zlist
 
 
@@ -46,10 +53,16 @@ class Model():
         del_curr = np.multiply(grad_mat, der_Z)
         del_w_list = []
         del_b_list = []
+        ign = 0
 
         for index, layer in enumerate(self.layers[::-1]):
             
-            prev_act = activations[-index - 2]
+            if layer.type == 'dropout':
+                
+                ign += 1
+                continue
+
+            prev_act = activations[-index - 2 + ign]
             
             del_weights = np.outer(del_curr, prev_act)
             del_bias = np.array(del_curr)
@@ -58,7 +71,7 @@ class Model():
             del_b_list.append(del_bias)
 
             if (index < len(self.layers) - 1):
-                del_curr = calc_delta(layer.layer, del_curr, zlist[-index - 2])
+                del_curr = calc_delta(layer.layer, del_curr, zlist[-index - 2 + ign])
 
         return del_w_list, del_b_list
     
@@ -69,12 +82,12 @@ class Model():
                         
             for batch in range(len(X) // batch_size - 1):
                 
-                del_w = [np.zeros((layer.size, layer.pre_layer.size)) for layer in self.layers[::-1]]
-                del_b = [np.zeros(layer.size) for layer in self.layers[::-1]]
+                del_w = [np.zeros((layer.size, layer.pre_layer.size)) for layer in self.layers[::-1] if layer.type != 'dropout']
+                del_b = [np.zeros(layer.size) for layer in self.layers[::-1] if layer.type != 'dropout']
                 
                 for x, y in zip(X[batch_size * batch: batch_size * (batch+1)], Y[batch_size * batch: batch_size * (batch+1)]):
 
-                    activations, zlist = self.forward_pass(x)
+                    activations, zlist = self.forward_pass(x, True)
                     del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y, self.output_layer.size))
                     
                     del_w = [np.add(matA, matB) for matA, matB in zip(del_w, del_wb)]
@@ -92,21 +105,33 @@ class Model():
     def update_weights(self, del_w, batch):
 
         new_weights = self.optimizer.adam_weights (del_w, batch)
-        
-        for layer, d_we in zip(self.layers[::-1], new_weights):
+    
+        ign = len(self.layers) - 1
+
+        for index in range(len(new_weights)):
             
+            while self.layers[ign - index].type == 'dropout':
+                ign-=1
+            layer = self.layers[ign - index]
+    
             for i, neuron in enumerate(layer.layer):
-                neuron.weights = np.subtract(neuron.weights, d_we[i])
+                neuron.weights = np.subtract(neuron.weights, new_weights[index][i])
             
 
     def update_bias(self, del_b, batch):
 
         new_bias = self.optimizer.adam_bias (del_b, batch)
-            
-        for layer, d_b in zip(self.layers[::-1], new_bias):
+        
+        ign = len(self.layers) - 1
+        
+        for index in range(len(new_bias)):
+
+            while self.layers[ign - index].type == 'dropout':
+                ign-=1
+            layer = self.layers[ign - index]
             
             for i, neuron in enumerate(layer.layer):
-                neuron.bias = neuron.bias - d_b[i]
+                neuron.bias = neuron.bias - new_bias[index][i]
 
 
     def evaluate (self, X_valid, Y_valid):

@@ -26,3 +26,13 @@ def calc_delta(curr_layer, delta_post, zs):
     del_curr = np.multiply(dot, der_Z)
 
     return del_curr
+
+def drop_func(layer_output, rate):
+    
+    zeroes = int(rate * len(layer_output))
+    ones = len(layer_output) - zeroes
+
+    mult = np.array(np.concatenate((np.zeros(zeroes), np.ones(ones)), axis=0))
+    np.random.shuffle(mult)
+
+    return np.multiply(mult, layer_output)
