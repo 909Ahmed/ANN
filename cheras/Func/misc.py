@@ -6,12 +6,21 @@ def cost_der (activations, logits):
 
 def calc_acc (predicted, Y):
 
-    predicted = list(predicted)
-    return int(predicted.index(max(predicted)) == Y)
+    ans = 0
+    for pred, y in zip(predicted, Y):
+        
+        pred = list(pred)
+        ans += int(pred.index(max(pred)) == y)
+    
+    return ans
 
 def get_embed (logits, size):
-    temp = [0] * size
-    temp[logits] = 1
+
+    temp = [[0] * size] * len(logits)
+    
+    for index in range(len(logits)):
+        temp[index][logits[index]] = 1
+            
     return temp
 
 def calc_delta(curr_layer, delta_post, zs):
@@ -20,9 +29,9 @@ def calc_delta(curr_layer, delta_post, zs):
     mat = np.array(mat)
     mat = mat.transpose()
     
-    der_Z = [der_sigmoid(x) for x in zs]
+    der_Z = [[der_sigmoid(x) for x in zs_ele] for zs_ele in zs]
 
-    dot = np.dot(mat, delta_post)
+    dot = [np.dot(mat, delta_post_ele) for delta_post_ele in delta_post]
     del_curr = np.multiply(dot, der_Z)
 
     return del_curr
