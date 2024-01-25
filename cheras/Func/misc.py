@@ -43,5 +43,5 @@ def drop_func(layer_output, rate):
 
     mult = np.array(np.concatenate((np.zeros(zeroes), np.ones(ones)), axis=0))
     np.random.shuffle(mult)
-
+    
     return np.multiply(mult, layer_output)
