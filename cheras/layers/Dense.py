@@ -1,7 +1,7 @@
 from .neurons import Neurons
 class Dense ():
 
-    def __init__(self, size, activation_fn, pre_layer):
+    def __init__(self, size, drop, activation_fn, pre_layer):
         
         self.size = size
         self.pre_layer = pre_layer
@@ -9,3 +9,4 @@ class Dense ():
         self.activation_fn = activation_fn
         self.func = []
         self.type = 'dense'
+        self.drop = drop
