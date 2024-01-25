@@ -19,21 +19,21 @@ class Adam ():
         
         self.weight_vel = [self.calc_vel_weights(mat, index) for index, mat in enumerate(del_w)]
         self.weight_rms = [self.calc_rms_weights(mat, index) for index, mat in enumerate(del_w)]
-
+        
+        
         vhat = [ele / (1 - (self.beta1 ** (batch + 1))) for ele in self.weight_vel]
-        mhat = [ele / (1 - (self.beta2 ** (batch + 1))) for ele in self.weight_rms]
-
-        return [self.lr * np.divide(vel, (np.sqrt(rms) + self.eps)) for vel, rms in zip(vhat, mhat)]
+        mhat = [ele / (1 - (self.beta2 ** (batch + 1))) for ele in self.weight_rms] 
+        
+        return [self.lr * np.divide(vel, np.add(np.sqrt(rms), self.eps)) for vel, rms in zip(vhat, mhat)]
 
 
     def adam_bias (self, del_b, batch):
 
         self.bias_vel = [self.calc_vel_bias(mat, index) for index, mat in enumerate(del_b)]
-        self.bias_rms = [np.add(self.bias_rms[index], self.calc_rms_bias(mat, index)) for index, mat in enumerate(del_b)]
+        self.bias_rms = [self.calc_rms_bias(mat, index) for index, mat in enumerate(del_b)]
 
         vhat = [ele / (1 - (self.beta1 ** (batch + 1))) for ele in self.bias_vel]
         mhat = [ele / (1 - (self.beta2 ** (batch + 1))) for ele in self.bias_rms]
-
         return [self.lr * np.divide(vel, (np.sqrt(rms) + self.eps)) for vel, rms in zip(vhat, mhat)]
 
 
