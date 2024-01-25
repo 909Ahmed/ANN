@@ -16,6 +16,7 @@ class Model():
     def forward_pass (self, batch, Training=False):
 
         activations = [batch]
+        activations = [batch]
         zlist = []
 
         for layer in self.layers:
@@ -28,12 +29,25 @@ class Model():
                 pre_activations = []
                 pre_zlist = []
 
-                for i in range(len(batch)):
+                # if layer.batchnorm and Training:
 
+                #     mean = np.mean(activations[-1], axis=0)
+                #     std = np.var(activations[-1], axis=0)
+                #     stdp = np.sqrt(np.add(std, 0.00000001))
+                #     # print()
+                #     activations[-1] = np.divide(np.subtract(activations[-1], mean), stdp)
+                
+                # print(len(activations[-1]), len(activations[-1][0]))
+                
+
+                for i in range(len(batch)):
+                                            
+                    # print('UWU')
                     pre_zlist.append(np.add (np.dot(weights, activations[-1][i]), bias))
                     pre_activations.append([sigmoid(z) for z in pre_zlist[-1]])
 
                     if layer.drop and Training:
+
                         pre_zlist[-1] = drop_func(pre_zlist[-1], layer.drop)
                         pre_activations[-1] = drop_func(pre_activations[-1], layer.drop)
 
@@ -44,7 +58,7 @@ class Model():
                 
                 # Implementing Forward Pass for Convolutional Layers
                 zlist.append(np.add (np.dot(weights, activations[-2]), bias))
-                activations.append([sigmoid(z) for z in zlist[-1]])
+
 
         return activations, zlist
 
@@ -53,12 +67,16 @@ class Model():
                 
         grad_mat = [cost_der(act, logit) for act, logit in zip(activations[-1], logits)]
         der_Z = [[der_sigmoid(x) for x in pre_zlist] for pre_zlist in zlist[-1]] 
+        grad_mat = [cost_der(act, logit) for act, logit in zip(activations[-1], logits)]
+        der_Z = [[der_sigmoid(x) for x in pre_zlist] for pre_zlist in zlist[-1]] 
 
         del_curr = np.multiply(grad_mat, der_Z)
         del_w_list = []
         del_b_list = []
 
         for index, layer in enumerate(self.layers[::-1]):
+
+            prev_act = activations[-index - 2]
 
             prev_act = activations[-index - 2]
             
@@ -80,6 +98,16 @@ class Model():
                         
             for batch in range(len(X) // batch_size - 1):
                 
+                x = X[batch_size * batch: batch_size * (batch+1)]
+                y = Y[batch_size * batch: batch_size * (batch+1)]
+                y = list(y)
+
+                activations, zlist = self.forward_pass(x, True)
+                
+                del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y, self.output_layer.size))
+                
+                del_wb = [np.sum(del_wbb, axis=0) for del_wbb in del_wb]
+                del_bb = [np.sum(del_bbb, axis=0) for del_bbb in del_bb]
                 x = X[batch_size * batch: batch_size * (batch+1)]
                 y = Y[batch_size * batch: batch_size * (batch+1)]
                 y = list(y)
@@ -135,6 +163,7 @@ class Model():
     def evaluate (self, X_valid, Y_valid):
     
         count = 0
+            
         batch_size = 32 #hard_coder bolte
         for batch in range(len(X_valid) // batch_size - 1):
                 

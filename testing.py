@@ -1,11 +1,7 @@
 import numpy as np
 
-a = np.array([])
+a = np.array([[[1, 2],[3, 4],[5, 6]], [[6, 5],[4, 3],[2, 1]]])
+b = [[0, 2], [3, 4], [5, 6]]
+c = [[3, 2], [2, 2], [2, 2]]
 
-a = np.append(a, 2)
-a = np.append(a, 2)
-a = np.append(a, 2)
-a = np.append(a, 2)
-a = np.append(a, 2)
-
-print(a)
+print(np.add(c, 4))
