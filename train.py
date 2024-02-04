@@ -1,9 +1,10 @@
-from ANN.Model.model import Model
-from ANN.Layers.Dense import Dense
-from ANN.Layers.Input import Input
-from ANN.Layers.Dropout import Dropout
+from cheras.Model.model import Model
+from cheras.Layers.Dense import Dense
+from cheras.Layers.Input import Input
+from cheras.Layers.Dropout import Dropout
 import numpy as np
 import pandas as pd
+
 train = pd.read_csv('./data/mnist_train.csv')
 test = pd.read_csv('./data/mnist_test.csv')
 
