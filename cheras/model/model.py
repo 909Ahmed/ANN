@@ -14,9 +14,7 @@ class Model():
 
 
     def forward_pass (self, batch, Training=False):
-    def forward_pass (self, batch, Training=False):
 
-        activations = [batch]
         activations = [batch]
         zlist = []
 
@@ -30,12 +28,21 @@ class Model():
                 pre_activations = []
                 pre_zlist = []
 
-                for i in range(len(batch)):
+                if layer.batchnorm and Training:
 
+                    mean = np.mean(activations[-1], axis=0)
+                    std = np.var(activations[-1], axis=0)
+                    stdp = np.sqrt(np.add(std, 0.0001))
+                    activations[-1] = np.divide(np.subtract(activations[-1], mean), stdp)
+                
+                
+                for i in range(len(batch)):
+                                            
                     pre_zlist.append(np.add (np.dot(weights, activations[-1][i]), bias))
                     pre_activations.append([sigmoid(z) for z in pre_zlist[-1]])
 
                     if layer.drop and Training:
+
                         pre_zlist[-1] = drop_func(pre_zlist[-1], layer.drop)
                         pre_activations[-1] = drop_func(pre_activations[-1], layer.drop)
 
@@ -46,17 +53,13 @@ class Model():
                 
                 # Implementing Forward Pass for Convolutional Layers
                 zlist.append(np.add (np.dot(weights, activations[-2]), bias))
-                # Implementing Forward Pass for Convolutional Layers
-                zlist.append(np.add (np.dot(weights, activations[-2]), bias))
-                activations.append([sigmoid(z) for z in zlist[-1]])
+
 
         return activations, zlist
 
 
     def backward_pass(self, activations, zlist, logits):
                 
-        grad_mat = [cost_der(act, logit) for act, logit in zip(activations[-1], logits)]
-        der_Z = [[der_sigmoid(x) for x in pre_zlist] for pre_zlist in zlist[-1]] 
         grad_mat = [cost_der(act, logit) for act, logit in zip(activations[-1], logits)]
         der_Z = [[der_sigmoid(x) for x in pre_zlist] for pre_zlist in zlist[-1]] 
 
@@ -67,18 +70,14 @@ class Model():
         for index, layer in enumerate(self.layers[::-1]):
 
             prev_act = activations[-index - 2]
-
-            prev_act = activations[-index - 2]
             
-            del_weights = [np.outer(del_curr_ele, prev_act_ele) for del_curr_ele, prev_act_ele in zip(del_curr, prev_act)]
             del_weights = [np.outer(del_curr_ele, prev_act_ele) for del_curr_ele, prev_act_ele in zip(del_curr, prev_act)]
             del_bias = np.array(del_curr)
-            
+
             del_w_list.append(del_weights)
             del_b_list.append(del_bias)
 
             if (index < len(self.layers) - 1):
-                del_curr = calc_delta(layer.layer, del_curr, zlist[-index - 2])
                 del_curr = calc_delta(layer.layer, del_curr, zlist[-index - 2])
 
         return del_w_list, del_b_list
@@ -97,27 +96,9 @@ class Model():
                 activations, zlist = self.forward_pass(x, True)
                 
                 del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y, self.output_layer.size))
-                
-                del_wb = [np.sum(del_wbb, axis=0) for del_wbb in del_wb]
-                del_bb = [np.sum(del_bbb, axis=0) for del_bbb in del_bb]
-                x = X[batch_size * batch: batch_size * (batch+1)]
-                y = Y[batch_size * batch: batch_size * (batch+1)]
-                y = list(y)
 
-                activations, zlist = self.forward_pass(x, True)
-                
-                del_wb, del_bb = self.backward_pass(activations, zlist, get_embed(y, self.output_layer.size))
-                
-                del_wb = [np.sum(del_wbb, axis=0) for del_wbb in del_wb]
-                del_bb = [np.sum(del_bbb, axis=0) for del_bbb in del_bb]
-
-                del_wb = [arr / batch_size for arr in del_wb]
-                del_bb = [arr / batch_size for arr in del_bb]
-
-                self.update_weights(del_wb, batch_size * epoch + batch)
-                self.update_bias(del_bb, batch_size * epoch + batch)
-                del_wb = [arr / batch_size for arr in del_wb]
-                del_bb = [arr / batch_size for arr in del_bb]
+                del_wb = [np.divide(np.sum(del_wbb, axis=0), batch_size) for del_wbb in del_wb]
+                del_bb = [np.divide(np.sum(del_bbb, axis=0), batch_size) for del_bbb in del_bb]
 
                 self.update_weights(del_wb, batch_size * epoch + batch)
                 self.update_bias(del_bb, batch_size * epoch + batch)
@@ -128,7 +109,7 @@ class Model():
     def update_weights(self, del_w, batch):
 
         new_weights = self.optimizer.adam_weights (del_w, batch)
-    
+        #remove this thing bruv
         ign = len(self.layers) - 1
 
         for index in range(len(new_weights)):
@@ -144,6 +125,7 @@ class Model():
     def update_bias(self, del_b, batch):
 
         new_bias = self.optimizer.adam_bias (del_b, batch)
+        # this thing too
         
         ign = len(self.layers) - 1
         
@@ -160,12 +142,6 @@ class Model():
     def evaluate (self, X_valid, Y_valid):
     
         count = 0
-        batch_size = 32 #hard_coder bolte
-        for batch in range(len(X_valid) // batch_size - 1):
-                
-            x = X_valid[batch_size * batch: batch_size * (batch+1)]
-            y = Y_valid[batch_size * batch: batch_size * (batch+1)]
-            y = list(y)
             
         batch_size = 32 #hard_coder bolte
         for batch in range(len(X_valid) // batch_size - 1):
