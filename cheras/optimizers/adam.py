@@ -8,11 +8,11 @@ class Adam ():
         self.lr = lr
         self.eps = 1e-8
                 
-        self.weight_vel = [np.zeros((layer.size, layer.pre_layer.size)) for layer in layers[::-1] if layer.type != 'dropout']
-        self.bias_vel = [np.zeros(layer.size) for layer in layers[::-1] if layer.type != 'dropout']
+        self.weight_vel = [np.zeros((layer.size, layer.pre_layer.size)) for layer in layers[::-1]]
+        self.bias_vel = [np.zeros(layer.size) for layer in layers[::-1]]
 
-        self.weight_rms = [np.zeros((layer.size, layer.pre_layer.size)) for layer in layers[::-1] if layer.type != 'dropout']
-        self.bias_rms = [np.zeros(layer.size) for layer in layers[::-1] if layer.type != 'dropout']
+        self.weight_rms = [np.zeros((layer.size, layer.pre_layer.size)) for layer in layers[::-1]]
+        self.bias_rms = [np.zeros(layer.size) for layer in layers[::-1]]
 
 
     def adam_weights (self, del_w, batch):
